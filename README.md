@@ -54,8 +54,22 @@ SELECT * FROM employee_demographics WHERE first_name LIKE "a%";
 SELECT * FROM employee_demographics WHERE first_name LIKE "a___";
 SELECT * FROM employee_demographics WHERE first_name LIKE "a___%";
 ```
+## 3. Having vs Where
 
-## 3. Aggregate Functions & GROUP BY
+* WHERE filters rows before grouping, while HAVING filters after aggregation.
+```sql
+SELECT gender, AVG(age)
+FROM employee_demographics
+GROUP BY gender
+HAVING AVG(age) > 40;
+
+SELECT occupation, AVG(salary)
+FROM employee_salary
+WHERE occupation LIKE "%manager%"
+GROUP BY occupation
+HAVING AVG(salary) > 70000;
+```
+## 4. Aggregate Functions & GROUP BY
 
 * Used `AVG()`, `MAX()`, `MIN()`, `COUNT()` for summaries.
 * Grouped data using `GROUP BY`.
@@ -69,7 +83,16 @@ SELECT occupation FROM employee_salary GROUP BY occupation;
 SELECT occupation, salary FROM employee_salary GROUP BY occupation, salary;
 ```
 
-## 4. LIMIT and Aliasing
+## 5. ORDER BY
+
+* Sorts employee records by name or a combination of gender and age in ascending or descending order.
+
+```sql
+SELECT * FROM employee_demographics ORDER BY first_name ASC;
+SELECT * FROM employee_demographics ORDER BY gender, age ASC;
+SELECT * FROM employee_demographics ORDER BY gender, age DESC;
+```  
+## 6. LIMIT and Aliasing
 
 * Used aliases to rename columns and `LIMIT` to restrict output.
 
@@ -80,7 +103,7 @@ SELECT * FROM employee_demographics ORDER BY age DESC LIMIT 3,1;
 SELECT gender, AVG(age) AS Avg_Age FROM employee_demographics GROUP BY gender HAVING Avg_Age > 40;
 ```
 
-## 5. JOINS
+## 7. JOINS
 
 * Practiced joining tables using `INNER`, `LEFT`, `RIGHT`, and `SELF JOIN` to combine information.
 
@@ -105,7 +128,7 @@ INNER JOIN employee_salary AS sal ON dem.employee_id = sal.employee_id
 INNER JOIN parks_departments AS pd ON sal.dept_id = pd.department_id;
 ```
 
-## 6. UNIONS
+## 8. UNIONS
 
 * Merged results from multiple tables
 
@@ -126,7 +149,7 @@ SELECT first_name, last_name, "Highly Paid Employee" AS Label FROM employee_sala
 ORDER BY first_name, last_name;
 ```
 
-## 7. String Functions
+## 9. String Functions
 
 * Used string functions like `LENGTH()`, `UPPER()`, `REPLACE()`, `CONCAT()` for string manipulation
 
@@ -142,7 +165,7 @@ SELECT first_name, LOCATE('An', first_name) FROM employee_demographics;
 SELECT first_name, last_name, CONCAT(first_name, ' ', last_name) AS Full_Name FROM employee_demographics;
 ```
 
-## 8. CASE Statement
+## 10. CASE Statement
 
 * Used `CASE` for conditional categorization
 
@@ -166,7 +189,7 @@ END AS Bonus
 FROM employee_salary;
 ```
 
-## 9. SUBQUERIES
+## 11. SUBQUERIES
 
 * Filtered records based on subquery results
 
@@ -193,7 +216,50 @@ FROM (
 ) AS agg_table;
 ```
 
-## 10. Window Functions
+## 12. Common Table Expressions (CTEs)
+
+* Used CTEs to simplify complex queries, enable multi-step logic, and perform joins more cleanly.
+
+```sql
+WITH CTE_Example AS (
+  SELECT gender, AVG(salary) AS avg_salary, MAX(salary) AS max_salary, 
+         MIN(salary) AS min_salary, COUNT(salary) AS salary_count
+  FROM employee_demographics AS dem 
+  JOIN employee_salary AS sal ON dem.employee_id = sal.employee_id
+  GROUP BY gender)
+SELECT AVG(avg_salary) FROM CTE_Example;
+
+SELECT AVG(avg_salary)
+FROM (
+  SELECT gender, AVG(salary) AS avg_salary, MAX(salary) AS max_salary, 
+         MIN(salary) AS min_salary, COUNT(salary) AS salary_count
+  FROM employee_demographics AS dem 
+  JOIN employee_salary AS sal ON dem.employee_id = sal.employee_id
+  GROUP BY gender) AS subq;
+
+WITH CTE_Example (Gender, Avg_Salary, Max_Salary, Min_Salary, Salary_Count) AS (
+  SELECT gender, AVG(salary), MAX(salary), MIN(salary), COUNT(salary) 
+  FROM employee_demographics AS dem 
+  JOIN employee_salary AS sal ON dem.employee_id = sal.employee_id
+  GROUP BY gender)
+SELECT * FROM CTE_Example;
+
+WITH CTE_Example1 AS (
+  SELECT employee_id, gender, birth_date
+  FROM employee_demographics 
+  WHERE birth_date > '1985-01-01'
+), 
+CTE_Example2 AS (
+  SELECT employee_id, salary
+  FROM employee_salary
+  WHERE salary > 50000)
+SELECT CTE_Example1.employee_id, gender, birth_date, salary
+FROM CTE_Example1 
+JOIN CTE_Example2 ON CTE_Example1.employee_id = CTE_Example2.employee_id;
+
+```
+
+## 13. Window Functions
 
 * Used `ROW_NUMBER()`, `RANK()`, `DENSE_RANK()` with `OVER()`
 
@@ -225,7 +291,7 @@ FROM employee_demographics AS dem
 JOIN employee_salary AS sal ON dem.employee_id = sal.employee_id;
 ```
 
-## 11. TEMPORARY Tables
+## 14. TEMPORARY Tables
 
 * Created and used temporary tables
 
@@ -243,7 +309,7 @@ SELECT * FROM employee_salary WHERE salary >= 50000;
 SELECT * FROM salary_over_50k;
 ```
 
-## 12. Stored Procedures
+## 15. Stored Procedures
 
 * Created and called procedures with and without parameters
 
@@ -270,7 +336,7 @@ DELIMITER ;
 CALL large_salaries3(1);
 ```
 
-## 13. TRIGGERS & EVENTS
+## 16. TRIGGERS & EVENTS
 
 * Used triggers and scheduled events
 
